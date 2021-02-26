@@ -3,7 +3,6 @@ const AWS = require('aws-sdk')
 const jwt = require('jsonwebtoken')
 const shortId = require('shortid')
 const { registerEmailParams } = require('../helpers/email')
-const user = require('../models/user')
 
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -108,6 +107,15 @@ exports.login = (req, res) => {
                 error: 'Email and password do not match.'
             })
         }
+
+        // generate token and send to client
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
+        const { _id, name, email, role } = user
+
+        return res.json({
+            token,
+            user: { _id, name, email, role },
+        })
     })
 
 }
