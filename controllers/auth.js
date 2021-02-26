@@ -3,6 +3,7 @@ const AWS = require('aws-sdk')
 const jwt = require('jsonwebtoken')
 const shortId = require('shortid')
 const { registerEmailParams } = require('../helpers/email')
+const user = require('../models/user')
 
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -94,12 +95,19 @@ exports.registerActivate = (req, res) => {
 exports.login = (req, res) => {
     const { email, password } = req.body
     
-    console.log({email})
     User.findOne({email}).exec((err, user) => {
         if (!user || err) {
             return res.status(400).json({
                 error: 'User with that email does not exist. Please register.'
             })
         }
+
+        // authenticate
+        if(!user.authenticate(password)){
+            return res.status(401).json({
+                error: 'Email and password do not match.'
+            })
+        }
     })
+
 }
