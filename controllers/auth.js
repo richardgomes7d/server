@@ -93,5 +93,13 @@ exports.registerActivate = (req, res) => {
 
 exports.login = (req, res) => {
     const { email, password } = req.body
-    console.table({ email, password })
+    
+    console.log({email})
+    User.findOne({email}).exec((err, user) => {
+        if (!user || err) {
+            return res.status(400).json({
+                error: 'User with that email does not exist. Please register.'
+            })
+        }
+    })
 }
