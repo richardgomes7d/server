@@ -115,6 +115,7 @@ exports.login = (req, res) => {
         return res.json({
             token,
             user: { _id, name, email, role },
+            message: 'You have successfully logged in!',
         })
     })
 
