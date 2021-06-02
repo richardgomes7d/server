@@ -1,10 +1,6 @@
 const express = require('express')
 const router = express.Router()
 
-// import validators
-const { userRegisterValidator, userLoginValidator } = require('../validators/auth');
-const { runValidation } = require('../validators');
-
 // import middlewares
 const { requireSignin, authMiddleware, adminMiddleware } = require('../controllers/auth')
 
