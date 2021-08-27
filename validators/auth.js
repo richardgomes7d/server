@@ -29,10 +29,10 @@ exports.forgotPasswordValidator = [
 ]
 
 exports.resetPasswordValidator = [
-    check('password')
+    check('newPassword')
         .isLength({ min: 6 })
         .withMessage('Password must be at least 6 characters long'),
-    check('passwordResetLink')
+    check('resetPasswordLink')
         .not()
         .isEmpty()
         .withMessage('token is required.')

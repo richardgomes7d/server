@@ -3,6 +3,7 @@ const AWS = require('aws-sdk')
 const jwt = require('jsonwebtoken')
 const expressJwt = require('express-jwt')
 const shortId = require('shortid')
+const _ = require('lodash')
 const { registerEmailParams, forgotPasswordEmailParams } = require('../helpers/email')
 
 AWS.config.update({
@@ -62,7 +63,7 @@ exports.registerActivate = (req, res) => {
             }
 
             return res.status(500).json({
-                error: 'Please contact support. Honestly, I have no idea what happened.'
+                error: err
             })
         }
 
@@ -98,14 +99,14 @@ exports.login = (req, res) => {
     User.findOne({email}).exec((err, user) => {
         if (!user || err) {
             return res.status(400).json({
-                error: 'User with that email does not exist. Please register.'
+                message: 'User with that email does not exist. Please register.'
             })
         }
 
         // authenticate
         if(!user.authenticate(password)){
             return res.status(401).json({
-                error: 'Email and password do not match.'
+                message: 'Email and password do not match.'
             })
         }
 
@@ -193,4 +194,58 @@ exports.forgotPassword = (req, res) => {
             })
         })
     })
+}
+
+exports.resetPassword = (req, res) => {
+    const { resetPasswordLink, newPassword } = req.body
+
+    if (resetPasswordLink) {
+        jwt.verify(resetPasswordLink, process.env.JWT_RESET_PASSWORD, function(err, decoded) {
+
+            if (err) {
+                console.log(err)
+                if (err.name === 'TokenExpiredError') {
+                    return res.status(401).json({
+                        error: 'Expired link. Try again.'
+                    })
+                }
+                return res.status(500).json({
+                    error: err,
+                    log: 'log',
+                })
+            }
+            
+            User.findOne({ resetPasswordLink }).exec((err, user) => {
+                if (err || !user) {
+                    return res.status(400).json({
+                        error: 'Invalid token. Try again.'
+                    })
+                }
+
+                const updatedFields = {
+                    password: newPassword,
+                    resetPasswordLink: '',
+                }
+
+                user = _.extend(user, updatedFields)
+
+                user.save((err, result) => {
+                    if (err) {
+                        return res.status(400).json({
+                            error: 'Password reset failed. Try again',
+                        })
+                    }
+
+                    return res.json({
+                        message: 'Great! Now you can login with your new password',
+                    })
+                })
+            })
+    
+        })
+    } else {
+        return res.json({
+            message: `ay ay ay ${resetPasswordLink} ${newPassword}`,
+        })
+    }
 }
