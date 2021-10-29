@@ -171,8 +171,8 @@ exports.forgotPassword = (req, res) => {
     
         const token = jwt.sign({ name: user.name }, process.env.JWT_RESET_PASSWORD, { expiresIn: '10m' })
         const params = forgotPasswordEmailParams(email, token)
-    
-        return User.updateOne({ resetPasswordLink: token }, (err, success) => {
+        
+        return user.updateOne({ resetPasswordLink: token }, (err, success) => {
             if (err) {
                 console.log(err)
                 return res.status(400).json({
